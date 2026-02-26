@@ -1,8 +1,8 @@
 
 /**
  * The ClockDisplay class implements a digital clock display for a
- * European-style 24 hour clock. The clock shows hours and minutes. The 
- * range of the clock is 00:00 (midnight) to 23:59 (one minute before 
+ * American-style 12 hour clock. The clock shows hours and minutes. The 
+ * range keeps within the 24 hour system but displays as the american system it also keeps track of the AM and PM
  * midnight).
  * 
  * The clock display receives "ticks" (via the timeTick method) every minute
@@ -14,25 +14,22 @@
  */
 public class ClockDisplay
 {
-    private NumberDisplay hours;
-    private NumberDisplay minutes;
-    private String displayString;    // simulates the actual display
-    
+    private NumberDisplay hours;   // 0-23 internally
+    private NumberDisplay minutes; // 0-59
+    private String displayString;  // the string shown to user
+
     /**
-     * Constructor for ClockDisplay objects. This constructor 
-     * creates a new clock set at 00:00.
+     * Default constructor: 12:00 AM
      */
     public ClockDisplay()
     {
-        hours = new NumberDisplay(24);
+        hours = new NumberDisplay(24); // 24-hour internal
         minutes = new NumberDisplay(60);
         updateDisplay();
     }
 
     /**
-     * Constructor for ClockDisplay objects. This constructor
-     * creates a new clock set at the time specified by the 
-     * parameters.
+     * Constructor with specific time (0-23 hours)
      */
     public ClockDisplay(int hour, int minute)
     {
@@ -42,43 +39,54 @@ public class ClockDisplay
     }
 
     /**
-     * This method should get called once every minute - it makes
-     * the clock display go one minute forward.
+     * Increment the clock by one minute
      */
     public void timeTick()
     {
         minutes.increment();
-        if(minutes.getValue() == 0) {  // it just rolled over!
+        if (minutes.getValue() == 0) { // minute rolled over
             hours.increment();
         }
         updateDisplay();
     }
 
     /**
-     * Set the time of the display to the specified hour and
-     * minute.
+     * Set the time of the clock (24-hour input)
      */
     public void setTime(int hour, int minute)
     {
-        hours.setValue(hour);
-        minutes.setValue(minute);
+        hours.setValue(hour % 24);  // ensure valid 0-23
+        minutes.setValue(minute % 60);
         updateDisplay();
     }
 
     /**
-     * Return the current time of this display in the format HH:MM.
+     * Get current time as 12-hour formatted string with AM/PM
      */
     public String getTime()
     {
         return displayString;
     }
-    
+
     /**
-     * Update the internal string that represents the display.
+     * Update the display string in 12-hour format
      */
     private void updateDisplay()
     {
-        displayString = hours.getDisplayValue() + ":" + 
-                        minutes.getDisplayValue();
+        int displayHour = hours.getValue();
+        boolean isAM = true;
+
+        if (displayHour == 0) {         // midnight
+            displayHour = 12;
+            isAM = true;
+        } else if (displayHour == 12) { // noon
+            displayHour = 12;
+            isAM = false;
+        } else if (displayHour > 12) {
+            displayHour = displayHour - 12;
+            isAM = false;
+        }
+
+        displayString = displayHour + ":" + minutes.getDisplayValue() + (isAM ? " AM" : " PM");
     }
 }
